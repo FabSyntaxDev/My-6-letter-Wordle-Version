@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Six Letter Wordle - FabSyntaxDev</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <div class="stats-container">
+                    <p class="stats-label">Contagem de tentativas</p>
+                    <div id="attempts-display">0/5</div>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <h1>Six Letter Wordle</h1>
+            </div>
+
+            <div class="header-right">
+                <div class="game-info">
+                    <!--<span class="nano-text">NANO BANANA</span>-->
+                </div>
+            </div>
+        </header>
+
+        <main class="game-layout">
+            <div id="left-column" class="column">
+                <div id="board-container">
+                    <div id="game-board">
+                        <!-- Previous guesses will be prepended here -->
+                        <div class="row current-row" id="current-row">
+                            <input type="text" class="tile-input" maxlength="1" data-index="0" autocomplete="off"
+                                spellcheck="off">
+                            <input type="text" class="tile-input" maxlength="1" data-index="1" autocomplete="off"
+                                spellcheck="off">
+                            <input type="text" class="tile-input" maxlength="1" data-index="2" autocomplete="off"
+                                spellcheck="off">
+                            <input type="text" class="tile-input" maxlength="1" data-index="3" autocomplete="off"
+                                spellcheck="off">
+                            <input type="text" class="tile-input" maxlength="1" data-index="4" autocomplete="off"
+                                spellcheck="off">
+                            <input type="text" class="tile-input" maxlength="1" data-index="5" autocomplete="off"
+                                spellcheck="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="right-column" class="column">
+                <div class="section-container history-section">
+                    <div class="section-header">
+                        <h2>Tentativas</h2>
+                    </div>
+                    <div id="history-list"></div>
+                </div>
+
+                <div class="section-container keyboard-section">
+                    <div class="section-header">
+                        <h2>Teclado</h2>
+                    </div>
+                    <div id="virtual-keyboard"></div>
+                </div>
+            </div>
+        </main>
+
+        <div id="modal" class="hidden">
+            <div class="modal-content glass">
+                <h2 id="modal-title"></h2>
+                <p id="modal-message"></p>
+                <button id="close-modal" class="btn-primary">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+</body>
+
+</html>

@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize keys (Exact Layout from Image)
     const keys = [
         ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-        ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'BACK'],
+        ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ç', 'BACK'],
         ['Z', 'X', 'C', 'V', 'B', 'N', 'M', 'ENTER']
     ];
 
@@ -396,3 +396,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
     }
 });
+

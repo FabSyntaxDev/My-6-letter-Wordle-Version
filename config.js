@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Handle typing
             input.addEventListener('input', (e) => {
                 const val = e.data?.toUpperCase() || e.target.value.slice(-1).toUpperCase();
-                if (/^[A-Z]$/.test(val)) {
+                if (/^[A-ZÇÁÀÃÂÉÊÍÓÔÕÚÜ]$/.test(val)) {
                     input.value = val;
                     if (index < wordLength - 1) tileInputs[index + 1].focus();
                 } else {

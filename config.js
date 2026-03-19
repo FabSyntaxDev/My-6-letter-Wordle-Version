@@ -1,7 +1,30 @@
 document.addEventListener('DOMContentLoaded', () => {
     let words = [];
+    let validDictionaryWords = new Set();
     let secretWord = '';
     let currentAttempt = 0;
+
+    async function loadFullDictionaries() {
+        try {
+            const ptRes = await fetch('https://raw.githubusercontent.com/pythonprobr/palavras/master/palavras.txt');
+            const ptText = ptRes.ok ? await ptRes.text() : '';
+            
+            const enRes = await fetch('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english-no-swears.txt');
+            const enText = enRes.ok ? await enRes.text() : '';
+            
+            const allWords = (ptText + '\n' + enText).split('\n');
+            allWords.forEach(w => {
+                const cleaned = w.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+                if (cleaned.length === 6 && /^[A-Z]{6}$/.test(cleaned)) {
+                    validDictionaryWords.add(cleaned);
+                }
+            });
+            console.log('Dicionários carregados em segundo plano. Palavras válidas (6 letras):', validDictionaryWords.size);
+        } catch (e) {
+            console.warn('Erro ao carregar grandes dicionários:', e);
+        }
+    }
+    loadFullDictionaries();
     let currentGuess = '';
     let gameOver = false;
     const maxAttempts = 5;
@@ -58,7 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const oneDay = 1000 * 60 * 60 * 24;
         const dayOfYear = Math.floor(diff / oneDay);
 
-        secretWord = (words[dayOfYear % words.length] || words[0] || 'BANANA').toUpperCase();
+        let rawSecret = words[dayOfYear % words.length] || words[0] || 'BANANA';
+        secretWord = rawSecret.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
 
         createKeyboard();
         setupInputHandlers();
@@ -76,11 +100,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Replay saved attempts
             saved.attempts.forEach((guess, index) => {
-                const result = checkGuess(guess, secretWord);
+                const normalizedGuess = guess.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                const result = checkGuess(normalizedGuess, secretWord);
                 const row = document.createElement('div');
                 row.className = 'row rendered-row';
 
-                guess.split('').forEach((letter, i) => {
+                normalizedGuess.split('').forEach((letter, i) => {
                     const tile = document.createElement('div');
                     tile.className = `tile ${result[i]}`;
                     tile.textContent = letter;
@@ -89,8 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 board.insertBefore(row, currentRowElement);
-                if (guess !== secretWord) {
-                    addToHistory(guess, result);
+                if (normalizedGuess !== secretWord) {
+                    addToHistory(normalizedGuess, result);
                 }
             });
 
@@ -243,6 +268,33 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const guessNormalized = currentGuess.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+        let isValidWord = false;
+        
+        for (let i = 0; i < words.length; i++) {
+            const wordNormalized = words[i].normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+            if (wordNormalized === guessNormalized) {
+                isValidWord = true;
+                break;
+            }
+        }
+        
+        if (!isValidWord && validDictionaryWords.has(guessNormalized)) {
+            isValidWord = true;
+        }
+
+        if (!isValidWord) {
+            currentRowElement.classList.add('shake');
+            setTimeout(() => currentRowElement.classList.remove('shake'), 500);
+            return;
+        }
+
+        // Normalize global currentGuess and inputs to align with the normalized secretWord
+        currentGuess = guessNormalized;
+        tileInputs.forEach((input, i) => {
+            input.value = guessNormalized[i];
+        });
+
         const result = checkGuess(currentGuess, secretWord);
         revealGuess(result);
     }
@@ -252,9 +304,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const secretArr = secret.split('');
         const guessArr = guess.split('');
 
+        const normalizeChar = (c) => c ? c.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() : null;
+
         // First pass: Correct matches
         for (let i = 0; i < wordLength; i++) {
-            if (guessArr[i] === secretArr[i]) {
+            if (guessArr[i] !== null && normalizeChar(guessArr[i]) === normalizeChar(secretArr[i])) {
                 result[i] = 'correct';
                 secretArr[i] = null;
                 guessArr[i] = null;
@@ -263,10 +317,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Second pass: Present matches
         for (let i = 0; i < wordLength; i++) {
-            if (guessArr[i] && secretArr.includes(guessArr[i])) {
-                result[i] = 'present';
-                const firstIndex = secretArr.indexOf(guessArr[i]);
-                secretArr[firstIndex] = null;
+            if (guessArr[i]) {
+                const gChar = normalizeChar(guessArr[i]);
+                const firstIndex = secretArr.findIndex(s => s && normalizeChar(s) === gChar);
+                
+                if (firstIndex !== -1) {
+                    result[i] = 'present';
+                    secretArr[firstIndex] = null;
+                }
             }
         }
         return result;
